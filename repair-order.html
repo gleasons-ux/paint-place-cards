@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14171a">
+<title>Gleason Taping Tool Repair Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: questionnaire on the left feeds a live paper ticket on the right that mirrors the Eagle invoice; stacks on phones */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --fg:#1b1f24; --muted:#5d6670; --line:#d5dade;
+  --accent:#c2410c; --accent-ink:#ffffff; --field:#f6f7f8; --ok:#15803d;
+  --paper:#ffffff; --paper-ink:#111; --paper-box:#d9d9d9; --paper-line:#222;
+  --display:"Archivo Black", "Arial Black", Impact, sans-serif;
+  --body:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14171a; --panel:#1d2125; --fg:#e8eaec; --muted:#9aa3ab; --line:#30363c;
+  --accent:#f97316; --accent-ink:#1a0d04; --field:#252a2f; --ok:#4ade80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171a; --panel:#1d2125; --fg:#e8eaec; --muted:#9aa3ab; --line:#30363c;
+  --accent:#f97316; --accent-ink:#1a0d04; --field:#252a2f; --ok:#4ade80; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:960px){.wrap{grid-template-columns:minmax(0,1fr)}}
+
+header.top{max-width:1240px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between}
+header.top h1{font-family:var(--display);font-size:clamp(22px,3vw,30px);margin:0;letter-spacing:.2px;text-wrap:balance}
+header.top p{margin:2px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:9px 14px;border-radius:8px;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+form{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:22px}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+legend{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;padding:0}
+legend .tag{font-family:var(--display);background:var(--fg);color:var(--panel);width:24px;height:24px;border-radius:5px;display:grid;place-items:center;font-size:13px;letter-spacing:0}
+.row{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.row.csz{grid-template-columns:minmax(0,1fr) 70px 96px}
+.row.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:420px){.row.csz{grid-template-columns:minmax(0,1fr) 64px}.row.csz .zip{grid-column:1/-1}.row.two{grid-template-columns:minmax(0,1fr)}}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);min-width:0}
+input,select,textarea{font:inherit;font-size:15px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:9px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:70px}
+
+.brands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.brand{border:2px solid var(--line);background:var(--field);color:var(--fg);border-radius:9px;padding:12px 6px;font-weight:700;font-size:14px;text-align:center}
+.brand[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+
+.parts{display:flex;flex-direction:column;gap:8px}
+.part{display:grid;grid-template-columns:96px minmax(0,1fr) 56px 30px;gap:6px;align-items:center}
+.part input{padding:8px}
+.part .x{border:0;background:none;color:var(--muted);font-size:20px;line-height:1}
+.parthead{display:grid;grid-template-columns:96px minmax(0,1fr) 56px 30px;gap:6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.add{align-self:flex-start;border:1px dashed var(--line);background:none;color:var(--fg);padding:7px 12px;border-radius:7px;font-weight:600}
+
+.sigwrap{position:relative;border:1px solid var(--line);border-radius:8px;background:#fff;touch-action:none}
+#sig{display:block;width:100%;height:130px;border-radius:8px}
+.sigwrap .base{position:absolute;left:16px;right:16px;bottom:30px;border-bottom:1px solid #9aa;pointer-events:none}
+.sigwrap .hint{position:absolute;left:16px;bottom:8px;font-size:11px;color:#777;pointer-events:none}
+.sigwrap .clr{position:absolute;right:8px;top:8px;border:1px solid #ccc;background:#fff;color:#333;border-radius:6px;padding:3px 9px;font-size:12px}
+.terms-box{font-size:13px;color:var(--muted);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 12px;max-height:150px;overflow:auto}
+.terms-box ol{margin:0;padding-left:18px}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-size:13px;color:var(--fg);font-weight:500}
+.check input{width:18px;height:18px;flex:none;margin-top:1px}
+.sample{font-size:12px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ---------- Paper ticket (always white paper, like the printed invoice) ---------- */
+.ticket-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);min-width:0}
+.scroller{overflow-x:auto;border-radius:6px}
+.ticket{background:var(--paper);color:var(--paper-ink);font-family:Arial,"Helvetica Neue",sans-serif;font-size:11px;
+  width:100%;min-width:640px;padding:26px 28px 22px;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 28px rgba(0,0,0,.12);color-scheme:light}
+.t-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:start}
+.t-store{text-align:center;font-weight:700;font-size:13.5px;line-height:1.25}
+.t-store small{display:block;font-weight:400;font-size:10px}
+.t-page{text-align:right;font-size:10px}
+.t-strip{display:grid;grid-template-columns:repeat(6,1fr);background:var(--paper-box);margin-top:12px;padding:4px 8px;gap:6px}
+.t-strip span{display:block;font-size:7.5px;font-weight:700;text-transform:uppercase}
+.t-strip b{font-weight:400;font-size:10.5px}
+.t-boxes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;align-items:start}
+.t-box{background:var(--paper-box);padding:5px 9px 8px;min-height:62px;position:relative}
+.t-box .lbl{font-size:7.5px;font-weight:700;text-transform:uppercase}
+.t-box .val{font-size:11px;line-height:1.35;margin-top:2px;word-break:break-word}
+.t-box .letter{position:absolute;right:6px;top:3px;font-family:var(--display);font-size:13px;color:#8a8a8a}
+.t-box.brandbox .val{font-weight:700;font-size:15px;letter-spacing:.3px}
+.t-title{display:flex;justify-content:space-between;align-items:end;margin-top:10px}
+.t-title .tax{font-size:10px}
+.t-title h2{margin:0;font-style:italic;font-weight:800;font-size:21px;letter-spacing:.3px}
+.t-tool{display:grid;grid-template-columns:2fr 1fr;border:1px solid var(--paper-line);margin-top:8px}
+.t-tool div{padding:4px 8px}
+.t-tool div+div{border-left:1px solid var(--paper-line)}
+.t-tool .lbl{font-size:7.5px;font-weight:700;text-transform:uppercase}
+.t-tool .v{font-size:11.5px;font-family:var(--mono);word-break:break-word}
+table.t-lines{width:100%;border-collapse:collapse;margin-top:8px;border:1px solid var(--paper-line)}
+.t-lines th{background:var(--paper-box);font-weight:400;font-size:9.5px;border-left:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);padding:2px 5px;text-transform:uppercase}
+.t-lines td{border-left:1px solid var(--paper-line);padding:3px 5px;font-size:10.5px;height:18px;vertical-align:top}
+.t-lines td.n{text-align:right;font-variant-numeric:tabular-nums}
+.t-lines tr.fill td{height:auto}
+.t-lines .c{position:relative}
+.t-notes{border:1px solid var(--paper-line);border-top:0;padding:4px 8px;min-height:34px;font-size:10.5px}
+.t-notes .lbl,.t-lead .lbl,.t-terms .lbl{font-size:7.5px;font-weight:700;text-transform:uppercase}
+.t-lead{display:flex;justify-content:space-between;align-items:center;margin-top:10px;border:2px solid var(--paper-line);padding:6px 10px}
+.t-lead .v{font-weight:800;font-size:15px}
+.t-terms{margin-top:8px;font-size:8.5px;line-height:1.35}
+.t-terms ol{margin:2px 0 0;padding-left:14px}
+.t-sign{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:14px;align-items:end}
+.t-sign .sl{border-bottom:1px solid var(--paper-line);height:46px;display:flex;align-items:flex-end;padding-left:6px}
+.t-sign .sl img{max-height:44px;max-width:100%}
+.t-sign .sl .d{font-size:12px;padding-bottom:3px}
+.t-sign .cap{font-size:9.5px;text-align:center;margin-top:2px}
+.t-foot{display:flex;justify-content:space-between;margin-top:12px;font-size:9px;color:#444}
+
+@media print{
+  body{background:#fff;padding:0}
+  header.top,form,.toast{display:none!important}
+  .wrap{display:block}
+  .ticket{box-shadow:none;min-width:0;padding:0}
+  .ticket-col{position:static}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Taping Tool Repair Order</h1>
+    <p>Fill in the questionnaire and the repair ticket builds itself on the right.</p>
+  </div>
+  <div class="actions">
+    <button type="button" class="btn" id="clearAll">Clear form</button>
+    <button type="button" class="btn primary" id="copyBtn">Copy ticket as text</button>
+  </div>
+</header>
+
+<div class="wrap">
+<form id="f" novalidate>
+  <div class="sample" id="sampleNote">Sample repair filled in so you can see the ticket. Tap <b>Clear form</b> to start a real one.</div>
+
+  <fieldset>
+    <legend><span class="tag">A</span> Customer</legend>
+    <label>Full name<input id="name" autocomplete="name"></label>
+    <label>Street address<input id="addr" autocomplete="street-address"></label>
+    <div class="row csz">
+      <label>City<input id="city" autocomplete="address-level2"></label>
+      <label>State<input id="state" maxlength="2" autocomplete="address-level1"></label>
+      <label class="zip">Zip code<input id="zip" inputmode="numeric" maxlength="10" autocomplete="postal-code"></label>
+    </div>
+    <div class="row two">
+      <label>Email<input id="email" type="email" autocomplete="email"></label>
+      <label>Phone (for pickup call)<input id="phone" type="tel" autocomplete="tel"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="tag">B</span> Tool manufacturer</legend>
+    <div class="brands" role="group" aria-label="Tool manufacturer">
+      <button type="button" class="brand" data-b="TapeTech" aria-pressed="false">TapeTech</button>
+      <button type="button" class="brand" data-b="Columbia" aria-pressed="false">Columbia</button>
+      <button type="button" class="brand" data-b="Level 5" aria-pressed="false">Level 5</button>
+    </div>
+    <label>Tool description
+      <input id="tool" list="toolList" placeholder="e.g. Automatic taper">
+      <datalist id="toolList">
+        <option value="Automatic Taper (Bazooka)"></option>
+        <option value='Flat Box 7"'></option><option value='Flat Box 10"'></option><option value='Flat Box 12"'></option>
+        <option value="Corner Roller"></option><option value="Corner Flusher"></option>
+        <option value="Angle Head / Corner Finisher"></option><option value="Mud Pump"></option>
+        <option value="Compound Tube / Loading Pump"></option><option value="Nail Spotter"></option>
+        <option value="Mud Runner"></option><option value="Box Handle"></option>
+      </datalist>
+    </label>
+    <label>Serial number<input id="serial" autocapitalize="characters"></label>
+    <label>Problem reported<textarea id="problem" rows="2"></textarea></label>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="tag">C</span> Parts</legend>
+    <div class="parthead"><span>Part #</span><span>Description</span><span>Qty</span><span></span></div>
+    <div class="parts" id="parts"></div>
+    <button type="button" class="add" id="addPart">+ Add part</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Lead time</legend>
+    <label>Expected repair time
+      <select id="lead">
+        <option>Same day</option>
+        <option>1–2 business days</option>
+        <option selected>3–5 business days</option>
+        <option>1–2 weeks</option>
+        <option>2–3 weeks (parts on order)</option>
+        <option>To be determined after inspection</option>
+      </select>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Customer acceptance</legend>
+    <div class="terms-box" id="termsBox"></div>
+    <label class="check"><input type="checkbox" id="agree"> Customer has read and accepts the repair terms.</label>
+    <div class="sigwrap">
+      <canvas id="sig" aria-label="Customer signature pad"></canvas>
+      <div class="base"></div><div class="hint">Customer signs here</div>
+      <button type="button" class="clr" id="sigClear">Clear</button>
+    </div>
+    <label>Date<input id="date" type="date"></label>
+  </fieldset>
+</form>
+
+<div class="ticket-col">
+  <div class="scroller">
+  <article class="ticket" id="ticket">
+    <div class="t-head">
+      <div></div>
+      <div class="t-store">GLEASON PAINT PLACE<br>65-01 ROOSEVELT AVENUE<br>WOODSIDE, NY 11377<br>WWW.PAINTPLACENY.COM<br>PHONE: (718) 639-4888
+        <small>TAPING TOOL REPAIR DEPARTMENT</small></div>
+      <div class="t-page">PAGE NO 1</div>
+    </div>
+    <div class="t-strip">
+      <div><span>Repair no:</span><b id="tRo"></b></div>
+      <div><span>Type:</span><b>REPAIR</b></div>
+      <div><span>Phone:</span><b id="tPhone"></b></div>
+      <div><span>Email:</span><b id="tEmail" style="word-break:break-all"></b></div>
+      <div><span>Status:</span><b>RECEIVED</b></div>
+      <div style="text-align:right"><span>Date in:</span><b id="tDateIn"></b></div>
+    </div>
+    <div class="t-boxes">
+      <div class="t-box"><span class="letter">A</span><div class="lbl">Sold to:</div><div class="val" id="tSold"></div></div>
+      <div class="t-box brandbox"><span class="letter">B</span><div class="lbl">Manufacturer:</div><div class="val" id="tBrand"></div></div>
+      <div class="t-box"><div class="lbl">Problem reported:</div><div class="val" id="tProblem"></div></div>
+    </div>
+    <div class="t-title"><span class="tax">REPAIR TICKET · KEEP FOR PICKUP</span><h2 id="tTitle">REPAIR:</h2></div>
+    <div class="t-tool">
+      <div><div class="lbl">Tool description</div><div class="v" id="tTool"></div></div>
+      <div><div class="lbl">Serial no.</div><div class="v" id="tSerial"></div></div>
+    </div>
+    <table class="t-lines">
+      <thead><tr><th style="width:38px">Line</th><th style="width:110px">Part #</th><th>Description</th><th style="width:56px">Qty</th></tr></thead>
+      <tbody id="tLines"></tbody>
+    </table>
+    <div class="t-lead"><span class="lbl">Expected lead time</span><span class="v" id="tLead"></span></div>
+    <div class="t-terms"><span class="lbl">Repair terms</span><ol id="tTerms"></ol></div>
+    <div class="t-sign">
+      <div><div class="sl" id="tSig"></div><div class="cap">Customer signature — accepts repair terms</div></div>
+      <div><div class="sl"><span class="d" id="tDate"></span></div><div class="cap">Date</div></div>
+    </div>
+    <div class="t-foot"><span>WE APPRECIATE YOUR BUSINESS</span><span id="tAgree"></span></div>
+  </article>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const TERMS = [
+  "Lead time is an estimate. Parts that are back-ordered from the manufacturer may extend the repair.",
+  "Parts are billed in addition to labor. We will call before doing work that exceeds the quoted amount.",
+  "Tools are accepted for repair as-is. Gleason Paint Place is not responsible for pre-existing wear or damage not listed on this ticket.",
+  "Please clean tools of joint compound before drop-off. Tools received dirty may carry a cleaning charge.",
+  "Repaired tools not picked up within 60 days of notice may be sold to cover repair costs.",
+  "Payment is due at pickup. Repair labor is warranted for 30 days; manufacturer parts carry the manufacturer's warranty."
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let brand = "";
+const ro = "R" + new Date().toISOString().slice(2,10).replace(/-/g,"") + "-" + String(Math.floor(Math.random()*900)+100);
+
+$("termsBox").innerHTML = "<ol>" + TERMS.map(t => `<li>${esc(t)}</li>`).join("") + "</ol>";
+$("tTerms").innerHTML = TERMS.map(t => `<li>${esc(t)}</li>`).join("");
+
+/* parts */
+function addPart(p = {}) {
+  const row = document.createElement("div");
+  row.className = "part";
+  const n = $("parts").children.length + Date.now() % 1000;
+  row.innerHTML = `<input aria-label="Part number" id="pn${n}" value="${esc(p.pn)}">
+    <input aria-label="Part description" id="pd${n}" value="${esc(p.d)}">
+    <input aria-label="Quantity" id="pq${n}" type="number" min="1" inputmode="numeric" value="${esc(p.q ?? 1)}">
+    <button type="button" class="x" aria-label="Remove part">×</button>`;
+  row.querySelector(".x").onclick = () => { row.remove(); render(); };
+  $("parts").appendChild(row);
+}
+$("addPart").onclick = () => { addPart(); render(); $("parts").lastElementChild.querySelector("input").focus(); };
+
+/* brand */
+document.querySelectorAll(".brand").forEach(b => b.onclick = () => {
+  brand = brand === b.dataset.b ? "" : b.dataset.b;
+  document.querySelectorAll(".brand").forEach(x => x.setAttribute("aria-pressed", x.dataset.b === brand));
+  render();
+});
+
+/* signature */
+const cv = $("sig"), ctx = cv.getContext("2d");
+let drawing = false, signed = false;
+function sizeCanvas() {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const keep = signed ? cv.toDataURL() : null;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#0b1f4a";
+  if (keep) { const im = new Image(); im.onload = () => ctx.drawImage(im,0,0,r.width,r.height); im.src = keep; }
+}
+const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+cv.addEventListener("pointerdown", e => { drawing = true; cv.setPointerCapture(e.pointerId); const [x,y] = pos(e); ctx.beginPath(); ctx.moveTo(x,y); });
+cv.addEventListener("pointermove", e => { if (!drawing) return; const [x,y] = pos(e); ctx.lineTo(x,y); ctx.stroke(); signed = true; });
+const end = () => { if (drawing) { drawing = false; render(); } };
+cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+$("sigClear").onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signed = false; render(); };
+window.addEventListener("resize", sizeCanvas);
+
+/* render ticket */
+function parts() {
+  return [...$("parts").children].map(r => { const i = r.querySelectorAll("input"); return {pn:i[0].value.trim(), d:i[1].value.trim(), q:i[2].value.trim()}; })
+    .filter(p => p.pn || p.d);
+}
+function fmtDate(v) { if (!v) return ""; const [y,m,d] = v.split("-"); return `${m}/${d}/${y.slice(2)}`; }
+function render() {
+  const v = id => $(id).value.trim();
+  const csz = [v("city"), (v("state")||"").toUpperCase(), v("zip")].filter(Boolean);
+  $("tSold").innerHTML = [esc(v("name").toUpperCase()), esc(v("addr").toUpperCase()),
+    csz.length ? esc(`${v("city").toUpperCase()}${v("city")?",":""} ${v("state").toUpperCase()}  ${v("zip")}`) : ""].filter(Boolean).join("<br>");
+  $("tBrand").textContent = brand ? brand.toUpperCase() : "";
+  $("tProblem").textContent = v("problem");
+  $("tPhone").textContent = v("phone");
+  $("tEmail").textContent = v("email");
+  $("tRo").textContent = ro;
+  $("tTitle").textContent = "REPAIR:" + ro;
+  $("tTool").textContent = v("tool").toUpperCase();
+  $("tSerial").textContent = v("serial").toUpperCase();
+  $("tLead").textContent = $("lead").value.toUpperCase();
+  $("tDate").textContent = fmtDate(v("date"));
+  $("tDateIn").textContent = fmtDate(v("date"));
+  $("tAgree").textContent = $("agree").checked ? "✓ TERMS ACCEPTED BY CUSTOMER" : "";
+  const ps = parts(), rows = Math.max(ps.length, 6);
+  let h = "";
+  for (let i = 0; i < rows; i++) {
+    const p = ps[i];
+    h += p ? `<tr><td class="n">${i+1}</td><td>${esc(p.pn)}</td><td>${esc(p.d.toUpperCase())}</td><td class="n">${esc(p.q)}</td></tr>`
+           : `<tr><td></td><td></td><td></td><td></td></tr>`;
+  }
+  $("tLines").innerHTML = h;
+  $("tSig").innerHTML = signed ? `<img alt="Customer signature" src="${cv.toDataURL()}">` : "";
+}
+$("f").addEventListener("input", render);
+$("f").addEventListener("change", render);
+$("f").addEventListener("submit", e => e.preventDefault());
+
+/* copy */
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+$("copyBtn").onclick = () => {
+  const v = id => $(id).value.trim();
+  const lines = [
+    `GLEASON PAINT PLACE — REPAIR ${ro}`,
+    `Customer: ${v("name")}`, `${v("addr")}, ${v("city")}, ${v("state").toUpperCase()} ${v("zip")}`,
+    `Email: ${v("email")}${v("phone") ? "  Phone: " + v("phone") : ""}`,
+    `Manufacturer: ${brand || "-"}`, `Tool: ${v("tool")}  S/N: ${v("serial")}`,
+    v("problem") ? `Problem: ${v("problem")}` : null,
+    "Parts:", ...parts().map((p,i) => `  ${i+1}. ${p.pn}  ${p.d}  x${p.q}`),
+    `Lead time: ${$("lead").value}`,
+    `Terms accepted: ${$("agree").checked ? "Yes" : "No"}  Signed: ${signed ? "Yes" : "No"}  Date: ${fmtDate(v("date"))}`
+  ].filter(l => l !== null).join("\n");
+  const fallback = () => { const ta = document.createElement("textarea"); ta.value = lines; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast("Copied"); } catch(e) { toast("Select and copy the text"); } ta.remove(); };
+  try { navigator.clipboard.writeText(lines).then(() => toast("Ticket copied"), fallback); } catch(e) { fallback(); }
+};
+
+/* clear */
+$("clearAll").onclick = () => {
+  ["name","addr","city","state","zip","email","phone","tool","serial","problem"].forEach(id => $(id).value = "");
+  $("lead").selectedIndex = 2; $("agree").checked = false;
+  brand = ""; document.querySelectorAll(".brand").forEach(x => x.setAttribute("aria-pressed","false"));
+  $("parts").innerHTML = ""; addPart();
+  ctx.clearRect(0,0,cv.width,cv.height); signed = false;
+  $("sampleNote").hidden = true;
+  render(); $("name").focus();
+};
+
+/* sample + init */
+const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+$("date").value = today.toISOString().slice(0,10);
+Object.entries({name:"John Rivera", addr:"41-20 48th Street", city:"Sunnyside", state:"NY", zip:"11104",
+  email:"jrivera.drywall@example.com", phone:"(718) 555-0142", tool:"Automatic Taper (Bazooka)", serial:"AT-418276",
+  problem:"Cable slipping, tape not cutting clean"}).forEach(([k,val]) => $(k).value = val);
+brand = "TapeTech"; document.querySelector('.brand[data-b="TapeTech"]').setAttribute("aria-pressed","true");
+addPart({pn:"05TT 401", d:"Cutter blade assembly", q:1});
+addPart({pn:"05TT 288", d:"Drive cable", q:1});
+sizeCanvas(); render();
+</script>
+</body>
+</html>
